@@ -1,17 +1,18 @@
 import java.util.Scanner;
 import java.math.BigDecimal;
-import java.util.Optional;
 /**
  * Input.java
- * Class handles user input via the Scanner class for types: int, double, String, BigDecimal, char. The input is validated before being returned. 
- * The private readInput() method is called by all input methods to get a non-empty string input, which can be casted to the chosen type.
+ * The Input class handles user input via the Scanner class for types: int, double, String, BigDecimal, char. The input is validated before being returned. 
+ * The readInput() method is called by all input methods to get a non-empty string input, which can be casted to the chosen type.
+ * The optional parameter customPrompt can be passed if the user should be told a specific message before inputting a value. If customPrompt is empty, a default prompt is used.
 */
 class Input {
+
 	/**
  * Helper method checks a line of input to make sure it's not empty.
  * @return A non-empty string of user-inputted text
 	*/
-	private static String readInput() 
+	protected static String readInput() 
 	{
 		Scanner scanner = new Scanner(System.in);
 		String lineInput = ""; 
@@ -24,22 +25,30 @@ class Input {
 		} while (lineInput.isEmpty()); // Will now repeat loop until lineInput is no longer empty
 		return lineInput;
 	}
+
 	/**
  * Helper method prints an error message to the console if the input was an invalid type. 
- * @param error This holds the type that should be told to the user. The actual name of the type isn't used, and instead something more user-friendly is printed such as "whole number" instead of "int".
+ * @param error This holds the type of desired input which should be printed to the user, such as "whole number".
  	*/
-	public static void errorMessage (String error) {
+	protected static void errorMessage (String error) {
 		System.err.println("ERROR: That's not a " + error + "!");
 		System.err.print("Try again: ");
 	}
 
-	private static void promptUser(String[] promptArr, String type) {
-		if (promptArr.length == 0) {
+	/**
+ * Helper method prints the default prompt with the specified type if the customPrompt array is empty. 
+ * If the customPrompt parameter was called, that prompt is printed.
+ * @param customPrompt This array holds the optional customPrompt variable that can be passed as a parameter when calling an input method.
+ * @param type This String holds the desired type of input that should be printed to the user if no custom prompt was passed, such as "whole number".
+	*/
+	private static void promptUser(String[] customPrompt, String type) {
+		if (customPrompt.length == 0) {
 			System.out.print("Tell me any " + type + ": ");
 		}
-		else if (promptArr.length == 1) {
-			System.out.print(promptArr[0] + ": ");
+		else if (customPrompt.length == 1) {
+			System.out.print(customPrompt[0] + ": ");
 		}
+			
 		else {
 			errorMessage("valid amount of prompts!");
 		}
@@ -48,15 +57,16 @@ class Input {
 
 
 	/**
- * Method converts a string input into an int. If the input isn't a valid int, the error is caught and a new input is gotten from the user.
- * @param prompt The prompt the user is asked before providing the input
+ * Method converts a string input into an int. 
+ * If the input isn't a valid int, the error is caught and a new input is prompted from the user.
+ * @param prompt  An optional custom prompt the user can provide instead of the default one. 
  * @return A non-empty user-inputted integer
 	*/
-	public static int intInput(String ... prompt) 
+	public static int intInput(String ... customPrompt) 
 	{
+		String type = "whole number";
+		promptUser(customPrompt, type);
 		int num = 0;
-		String type = "whole number"; // Make this a non-static constructor maybe?? 
-		promptUser(inppromptutPrompt, type);
 		while (true) {
 			try {
 				num = Integer.parseInt(readInput()); // Throws error if input isn't an integer
@@ -71,15 +81,17 @@ class Input {
 
 
 	/**
- * Method converts a string input into an double. If the input isn't a valid double, the error is caught and a new input is gotten from the user.
- * @param prompt The prompt the user is asked before providing the input
+ * Method converts a string input into an double. 
+ * If the input isn't a valid double, the error is caught and a new input is gotten from the user.
+ * @param prompt An optional custom prompt the user can provide instead of the default one. 
  * @return A non-empty user-inputted double
 	*/
-	public static double doubleInput(String ... prompt) 
+	public static double doubleInput(String ... customPrompt) 
 	{
-		double num = 0.0;
 		String type = "number";
-		promptUser(prompt, type);
+		promptUser(customPrompt, type);
+
+		double num = 0.0;
 		while (true) {
 			try {
 				num = Double.parseDouble(readInput()); // Throws error from here if input isn't a double
@@ -94,15 +106,17 @@ class Input {
 
 
 	/**
- * Method converts a string input into an BigDecimal. If the input isn't a valid number, the error is caught and a new input is gotten from the user.
- * @param prompt The prompt the user is asked before providing the input
+ * Method converts a string input into an BigDecimal. 
+ * If the input isn't a valid number, the error is caught and a new input is gotten from the user.
+ * @param prompt An optional custom prompt the user can provide instead of the default one. 
  * @return A non-empty user-inputted BigDecimal
 		*/
-	public static BigDecimal bigDecimalInput(String ... prompt)
+	public static BigDecimal bigDecimalInput(String ... customPrompt)
 	{
-		BigDecimal num;
 		String type = "number";
-		promptUser(prompt, type);
+		promptUser(customPrompt, type);
+		
+		BigDecimal num;
 		while (true) {
 			try {
 				num = new BigDecimal(readInput()); // Throws error if input isn't a valid number
@@ -118,33 +132,33 @@ class Input {
 
 	/**
  * Method gets a string input from the user. 
- * @param prompt The prompt the user is asked before providing the input
+ * @param prompt  An optional custom prompt the user can provide instead of the default one. 
  * @return A non-empty user-inputted string.
 	*/
-	public static String stringInput(String ... prompt) 
+	public static String stringInput(String ... customPrompt) 
 	{
-		String type = "string";
-		promptUser(prompt, type);
+		promptUser(customPrompt, "string");
 		return readInput();
 	}
 
 
 	/**
  * Method gets a string input from the user, and checks if the length is only one character long. If so, the string is casted to a char and returned. Otherwise, a new input is gotten from the user.
- * @param prompt The prompt the user is asked before providing the input
+ * @param prompt An optional custom prompt the user can provide instead of the default one. 
  * @return A non-empty user-inputted char.
 	*/
-	public static char charInput(String ... prompt) 
+	public static char charInput(String ... customPrompt) 
 	{
-		String string;
 		String type = "character";
-		promptUser(prompt, type);
+		promptUser(customPrompt, type);
+
+		String string;
 		while (true) {
 			string = readInput();
 			if (string.length() == 1) { // Will only leave loop if the input is one character long
 				break; 
 			}
-			else { // If the string's length is more than one
+			else { // If the string's length is more than one, print an error message
 				errorMessage(type);
 			}
 		}
