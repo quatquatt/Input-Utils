@@ -6,6 +6,7 @@ import java.math.BigDecimal;
  * The readInput() method is called by all input methods to get a non-empty string input, which can be casted to the chosen type.
  * The optional parameter customPrompt can be passed if the user should be told a specific message before inputting a value. If customPrompt is empty, a default prompt is used.
 */
+
 class Input {
 
 	/**
@@ -16,7 +17,7 @@ class Input {
 	{
 		Scanner scanner = new Scanner(System.in);
 		String lineInput = ""; 
-		do { 
+		do { // Starts loop once without condition
 			lineInput = scanner.nextLine().trim(); // Trims the user's input to remove leading and trailing spaces
 			if (lineInput.isEmpty()) {
 				System.err.println("ERROR: You didn't enter anything!"); 
@@ -42,10 +43,10 @@ class Input {
  * @param type This String holds the desired type of input that should be printed to the user if no custom prompt was passed, such as "whole number".
 	*/
 	private static void promptUser(String[] customPrompt, String type) {
-		if (customPrompt.length == 0) {
+		if (customPrompt.length == 0) { // If no custom parameter was taken
 			System.out.print("Tell me any " + type + ": ");
 		}
-		else if (customPrompt.length == 1) {
+		else if (customPrompt.length == 1) { // If a custom prompt was taken
 			System.out.print(customPrompt[0] + ": ");
 		}
 			
