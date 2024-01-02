@@ -1,171 +1,120 @@
 import java.util.Scanner;
-import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.function.Function;
+import java.lang.reflect.*;
+
+
 /**
  * Input.java
- * The Input class handles user input via the Scanner class for types: int, double, String, BigDecimal, char. The input is validated before being returned. 
- * The readInput() method is called by all input methods to get a non-empty string input, which can be casted to the chosen type.
+ * The Input class handles user input via the Scanner class and use of generics. 
+ * The code checks if the passed type has a valid valueOf method. If so, that's used to extract the String. If not, there's a HashMap with links to functions that'll handle certain classes such as Character. 
  * The optional parameter customPrompt can be passed if the user should be told a specific message before inputting a value. If customPrompt is empty, a default prompt is used.
 */
-
 class Input {
+    // A constant map that stores the manual converters.
+    private static final HashMap<Class<?>, Function<String, ?>> TYPE_TO_CONVERTER;
+    
+    /**
+     * A static block that initializes and declares the TYPE_TO_CONVERTER map with the types that do not have a valueOf(String) method. 
+     * @see Input
+     */
 
-	/**
- * Helper method checks a line of input to make sure it's not empty.
- * @return A non-empty string of user-inputted text
-	*/
-	protected static String readInput() 
-	{
-		Scanner scanner = new Scanner(System.in);
-		String lineInput = ""; 
-		do { // Starts loop once without condition
-			lineInput = scanner.nextLine().trim(); // Trims the user's input to remove leading and trailing spaces
-			if (lineInput.isEmpty()) {
-				System.err.println("ERROR: You didn't enter anything!"); 
-				System.err.print("Try again: ");
-			}
-		} while (lineInput.isEmpty()); // Will now repeat loop until lineInput is no longer empty
-		return lineInput;
-	}
+    // Constants to avoid using magic numbers
+    private static final int FIRST_INDEX = 0;
+    private static final int NO_PROMPT = 0;
+    private static final int ONE_PROMPT = 1;
 
-	/**
- * Helper method prints an error message to the console if the input was an invalid type. 
- * @param error This holds the type of desired input which should be printed to the user, such as "whole number".
- 	*/
-	protected static void errorMessage (String error) {
-		System.err.println("ERROR: That's not a " + error + "!");
-		System.err.print("Try again: ");
-	}
-
-	/**
- * Helper method prints the default prompt with the specified type if the customPrompt array is empty. 
- * If the customPrompt parameter was called, that prompt is printed.
- * @param customPrompt This array holds the optional customPrompt variable that can be passed as a parameter when calling an input method.
- * @param type This String holds the desired type of input that should be printed to the user if no custom prompt was passed, such as "whole number".
-	*/
-	private static void promptUser(String[] customPrompt, String type) {
-		if (customPrompt.length == 0) { // If no custom parameter was taken
-			System.out.print("Tell me any " + type + ": ");
-		}
-		else if (customPrompt.length == 1) { // If a custom prompt was taken
-			System.out.print(customPrompt[0] + ": ");
-		}
-			
-		else {
-			errorMessage("valid amount of prompts!");
-		}
-	}
+    static 
+    {
+        TYPE_TO_CONVERTER = new HashMap<>();
+        // Add the types that do not have a valueOf(String) method manually
+        TYPE_TO_CONVERTER.put(Character.class, s -> 
+        {
+            if (s == null || s.isEmpty())
+                System.out.println("Empty string!"); // Checked
+            return s.charAt(FIRST_INDEX);
+        });
+        TYPE_TO_CONVERTER.put(String.class, s -> s); 
+    }
 
 
+    /**
+     * A private helper method that checks if the given type has a valueOf(String) method.
+     * @param type the Class object of the type to check
+     * @return true if the type has a valueOf(String) method, false otherwise
+     */
+    private static boolean hasValueOfMethod(Class<?> type) 
+    {
+        try 
+        {
+            Method valueOfMethod = type.getDeclaredMethod("valueOf", String.class);
+            return true;
+        } 
+        catch (NoSuchMethodException e) // If the given class has no valueOf method, checked
+        {
+            return false;
+        }
+    }
 
-	/**
- * Method converts a string input into an int. 
- * If the input isn't a valid int, the error is caught and a new input is prompted from the user.
- * @param prompt  An optional custom prompt the user can provide instead of the default one. 
- * @return A non-empty user-inputted integer
-	*/
-	public static int intInput(String ... customPrompt) 
-	{
-		String type = "whole number";
-		promptUser(customPrompt, type);
-		int num = 0;
-		while (true) {
-			try {
-				num = Integer.parseInt(readInput()); // Throws error if input isn't an integer
-				break; // Only breaks infinite loop if input is an integer
-			}
-			catch (NumberFormatException e) { // Thrown error caught here
-				errorMessage(type);
-			}
-		} 
-		return num;
-	}
+    
+    /**
+     * A private helper method that prints a prompt for the user to input a value of the given type.
+     * @param type the Class object of the type to prompt
+     * @param customPrompt an optional array of Strings that contains a custom message for the user
+     * @throws IllegalArgumentException if the customPrompt array has more than one element
+     */
+    private static <T> void promptInput(Class<T> type, String[] customPrompt) {
+        String typeName = type.getSimpleName();
+        switch (customPrompt.length)
+        {
+            case NO_PROMPT:
+                System.out.print("Tell me any " + typeName + ": ");
+                break;
+            case ONE_PROMPT: 
+                System.out.print(customPrompt[FIRST_INDEX] + ": ");
+                break;
+            default: 
+                throw new IllegalArgumentException("Invalid number of custom prompts: expected 0 or 1, but got " + customPrompt.length); // Unchecked
+        }
+    }
 
-
-	/**
- * Method converts a string input into an double. 
- * If the input isn't a valid double, the error is caught and a new input is gotten from the user.
- * @param prompt An optional custom prompt the user can provide instead of the default one. 
- * @return A non-empty user-inputted double
-	*/
-	public static double doubleInput(String ... customPrompt) 
-	{
-		String type = "number";
-		promptUser(customPrompt, type);
-
-		double num = 0.0;
-		while (true) {
-			try {
-				num = Double.parseDouble(readInput()); // Throws error from here if input isn't a double
-				break; // Only breaks infinite loop if input is a double
-			}
-			catch (NumberFormatException e) { // Thrown error caught here
-				errorMessage(type);
-			}
-		} 
-		return num;
-	}
-
-
-	/**
- * Method converts a string input into an BigDecimal. 
- * If the input isn't a valid number, the error is caught and a new input is gotten from the user.
- * @param prompt An optional custom prompt the user can provide instead of the default one. 
- * @return A non-empty user-inputted BigDecimal
-		*/
-	public static BigDecimal bigDecimalInput(String ... customPrompt)
-	{
-		String type = "number";
-		promptUser(customPrompt, type);
-		
-		BigDecimal num;
-		while (true) {
-			try {
-				num = new BigDecimal(readInput()); // Throws error if input isn't a valid number
-				break; // Only gets to this line and breaks infinite loop if input is valid
-			}
-			catch (NumberFormatException e) { // Thrown error caught here
-				errorMessage(type);
-			}
-		}
-		return num; 
-	}
+    /**
+     * A private method that converts a String input to the given type using either the valueOf(String) method or the manual converter from the TYPE_TO_CONVERTER map.
+     * @param scannedInput the String input to be converted
+     * @param type the Class object of the type to convert to
+     * @return the converted value of the given type
+     * @throws Exception if the type is not supported or the input is invalid
+     */
+    private static <T> T convertInput (String scannedInput, Class<T> type) throws IllegalArgumentException, InvocationTargetException
+    {
+        Function<String, ?> converter = TYPE_TO_CONVERTER.get(type);
+        if (hasValueOfMethod(type) && converter == null) 
+        {
+            Method valueOfMethod = type.getDeclaredMethod("valueOf", String.class);
+            return type.cast(valueOfMethod.invoke(null, scannedInput));
+        }
+        else if (converter != null) 
+            return type.cast(converter.apply (scannedInput) );
+        throw new IllegalArgumentException("Unsupported type: " + type); // Exception thrown if there's no logic for handling this Class, unchecked
+        
+    }
 
 
-	/**
- * Method gets a string input from the user. 
- * @param prompt  An optional custom prompt the user can provide instead of the default one. 
- * @return A non-empty user-inputted string.
-	*/
-	public static String stringInput(String ... customPrompt) 
-	{
-		promptUser(customPrompt, "string");
-		return readInput();
-	}
-
-
-	/**
- * Method gets a string input from the user, and checks if the length is only one character long. If so, the string is casted to a char and returned. Otherwise, a new input is gotten from the user.
- * @param prompt An optional custom prompt the user can provide instead of the default one. 
- * @return A non-empty user-inputted char.
-	*/
-	public static char charInput(String ... customPrompt) 
-	{
-		String type = "character";
-		promptUser(customPrompt, type);
-
-		String string;
-		while (true) {
-			string = readInput();
-			if (string.length() == 1) { // Will only leave loop if the input is one character long
-				break; 
-			}
-			else { // If the string's length is more than one, print an error message
-				errorMessage(type);
-			}
-		}
-		return string.charAt(0); // Takes and returns first char of string only if one character was provided 
-	}
-
-
-
+    public static <T> T input(Class<T> type, String... customPrompt) 
+    {
+        Scanner sc = new Scanner(System.in);
+        T userInput = null;
+        promptInput(type, customPrompt);
+        while (true) {
+            try {
+                userInput = (T) convertInput(sc.nextLine(), type); // Throws error if input isn't of the specified type
+                break; // Only breaks infinite loop if input is valid
+            }
+            catch (InvocationTargetException e) { // Thrown error caught here, checked
+                Throwable cause = e.getCause(); // get the original exception
+                System.out.println("Cause: " + cause);
+            }
+        } 
+        return userInput;
+    }
 }
