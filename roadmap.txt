@@ -1,0 +1,10 @@
+Short-term features (hopefully next update):
+    - Fix the bullshit with unchecked / unsafe exceptions
+    - Readd comments and proper documentation
+Medium-term features:
+    - Extract repetitive while-loop logic into a generic method since it seems to all be the same
+    - Improve unit testing to check for correct output with an empty string, as well as how errors are handled
+Long-term goals:
+    - Make the code more easily extendable
+    - Reintroduce custom prompts (in a way that's more maintainable than last time)
+    - Improve error handling (possibly by writing The Error Handler class)
