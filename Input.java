@@ -60,7 +60,8 @@ class Input
         T output = null;
         try 
         {
-            output = (T) ConvertUtils.convert(input, targetType);
+            Object genericOutput = ConvertUtils.convert(input, targetType);
+            output = targetType.cast(genericOutput);
         }
         catch (ConversionException | ClassCastException e) 
         {
